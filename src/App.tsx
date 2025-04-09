@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 // Public route that redirects to dashboard if authenticated
@@ -36,7 +36,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  return isAuthenticated ? <Navigate to="/" /> : <>{children}</>;
+  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
 };
 
 // App with providers

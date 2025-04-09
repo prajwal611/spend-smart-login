@@ -19,15 +19,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo
-const MOCK_USERS = [
-  {
-    id: "1",
-    email: "user@example.com",
-    password: "password123",
-    name: "Demo User",
-  },
-];
+// Mock users for demo - make this persistent in localStorage so users persist across refreshes
+const getMockUsers = () => {
+  const storedUsers = localStorage.getItem("expenseTrackerMockUsers");
+  if (storedUsers) {
+    try {
+      return JSON.parse(storedUsers);
+    } catch (error) {
+      console.error("Failed to parse stored mock users:", error);
+    }
+  }
+  return [
+    {
+      id: "1",
+      email: "user@example.com",
+      password: "password123",
+      name: "Demo User",
+    },
+  ];
+};
+
+// Initialize with stored users or default
+const MOCK_USERS = getMockUsers();
+
+// Save users to localStorage
+const saveMockUsers = () => {
+  localStorage.setItem("expenseTrackerMockUsers", JSON.stringify(MOCK_USERS));
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -81,19 +99,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error("User already exists");
     }
     
-    // In a real app, we would send this to an API
-    // For this demo, we'll just simulate success
+    // Create a new user
     const newUser = {
       id: (MOCK_USERS.length + 1).toString(),
       email,
       name,
+      password, // Include password for mock data
     };
     
-    // Add to mock users array (this is just for demo)
-    MOCK_USERS.push({ ...newUser, password });
+    // Add to mock users array
+    MOCK_USERS.push(newUser);
+    saveMockUsers(); // Save updated users list
     
-    setUser(newUser);
-    localStorage.setItem("expenseTrackerUser", JSON.stringify(newUser));
+    // Return without password for user state
+    const { password: _, ...userWithoutPassword } = newUser;
+    setUser(userWithoutPassword);
+    localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
     toast.success("Registration successful");
     setIsLoading(false);
   };
