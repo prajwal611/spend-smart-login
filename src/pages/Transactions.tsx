@@ -7,16 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Search } from "lucide-react";
 import { ExpenseCategory } from "@/contexts/ExpenseContext";
+import { TransactionType, isValidTransactionType } from "@/lib/utils";
 
 const Transactions: React.FC = () => {
   const { expenses, deleteExpense } = useExpenses();
   const navigate = useNavigate();
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "expense" | "income">("all");
+  const [filterType, setFilterType] = useState<TransactionType>("all");
   const [filterCategory, setFilterCategory] = useState<ExpenseCategory | "all">("all");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedExpenseId, setSelectedExpenseId] = useState<string | null>(null);
@@ -31,7 +31,7 @@ const Transactions: React.FC = () => {
     const matchesCategory = 
       filterCategory === "all" || expense.category === filterCategory;
       
-    return matchesSearch && matchesType && (expense.isIncome || matchesCategory);
+    return matchesSearch && matchesType && (filterType === "income" || matchesCategory);
   });
 
   // Sort expenses by date (newest first)
@@ -70,7 +70,7 @@ const Transactions: React.FC = () => {
           />
         </div>
         <div className="flex gap-3">
-          <Select value={filterType} onValueChange={(value) => setFilterType(value as any)}>
+          <Select value={filterType} onValueChange={(value) => setFilterType(value as TransactionType)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
