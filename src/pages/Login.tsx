@@ -48,7 +48,7 @@ const Login: React.FC = () => {
         <div className="flex justify-center mb-6">
           <div className="flex items-center gap-2 text-primary">
             <Wallet className="h-8 w-8" />
-            <h1 className="text-3xl font-bold">ExpenseTracker</h1>
+            <h1 className="text-3xl font-bold">ExpenseWise</h1>
           </div>
         </div>
 

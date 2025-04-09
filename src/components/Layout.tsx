@@ -24,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2 text-primary font-semibold text-xl">
             <Wallet className="h-6 w-6" />
-            <span>ExpenseTracker</span>
+            <span>ExpenseWise</span>
           </Link>
           
           <div className="flex items-center gap-4">
