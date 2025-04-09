@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useExpenses } from "@/contexts/ExpenseContext";
@@ -31,7 +30,7 @@ const Transactions: React.FC = () => {
     const matchesCategory = 
       filterCategory === "all" || expense.category === filterCategory;
       
-    return matchesSearch && matchesType && (filterType === "income" || matchesCategory);
+    return matchesSearch && matchesType && (filterType === "income" || filterType === "all" || matchesCategory);
   });
 
   // Sort expenses by date (newest first)
