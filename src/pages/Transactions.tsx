@@ -31,7 +31,7 @@ const Transactions: React.FC = () => {
     const matchesCategory = 
       filterCategory === "all" || expense.category === filterCategory;
       
-    return matchesSearch && matchesType && (expense.isIncome || filterCategory === "all" || matchesCategory);
+    return matchesSearch && matchesType && matchesCategory;
   });
 
   // Sort expenses by date (newest first)
@@ -81,30 +81,28 @@ const Transactions: React.FC = () => {
             </SelectContent>
           </Select>
           
-          {filterType !== "income" && (
-            <Select 
-              value={filterCategory} 
-              onValueChange={(value) => setFilterCategory(value as any)}
-              disabled={filterType === "income"}
-            >
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="food">Food</SelectItem>
-                <SelectItem value="transportation">Transportation</SelectItem>
-                <SelectItem value="housing">Housing</SelectItem>
-                <SelectItem value="utilities">Utilities</SelectItem>
-                <SelectItem value="entertainment">Entertainment</SelectItem>
-                <SelectItem value="healthcare">Healthcare</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
-                <SelectItem value="shopping">Shopping</SelectItem>
-                <SelectItem value="personal">Personal</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
+          <Select 
+            value={filterCategory} 
+            onValueChange={(value) => setFilterCategory(value as any)}
+            disabled={filterType === "income"}
+          >
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="food">Food</SelectItem>
+              <SelectItem value="transportation">Transportation</SelectItem>
+              <SelectItem value="housing">Housing</SelectItem>
+              <SelectItem value="utilities">Utilities</SelectItem>
+              <SelectItem value="entertainment">Entertainment</SelectItem>
+              <SelectItem value="healthcare">Healthcare</SelectItem>
+              <SelectItem value="education">Education</SelectItem>
+              <SelectItem value="shopping">Shopping</SelectItem>
+              <SelectItem value="personal">Personal</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -112,8 +110,8 @@ const Transactions: React.FC = () => {
         {sortedExpenses.length > 0 ? (
           sortedExpenses.map((expense) => (
             <ExpenseCard
-              key={expense.id}
-              expense={expense}
+              key={expense.id} 
+              expense={expense} 
               onEdit={() => navigate(`/edit/${expense.id}`)}
               onDelete={() => confirmDelete(expense.id)}
             />
