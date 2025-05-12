@@ -29,6 +29,32 @@ app.get('/', (req, res) => {
   res.send('ExpenseWise API is running');
 });
 
+// Test MongoDB connection
+app.get('/api/test', async (req, res) => {
+  try {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState === 1) {
+      res.json({
+        status: 'success',
+        message: 'MongoDB is connected',
+        databaseName: mongoose.connection.db.databaseName
+      });
+    } else {
+      res.status(500).json({
+        status: 'error',
+        message: 'MongoDB is not connected',
+        readyState: mongoose.connection.readyState
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Error checking MongoDB connection',
+      error: error.message
+    });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
