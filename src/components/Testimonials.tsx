@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 
 const testimonialsData = [
@@ -48,7 +48,8 @@ const Testimonials: React.FC = () => {
                 <p className="mb-6 text-muted-foreground">{testimonial.content}</p>
                 <div className="flex items-center">
                   <Avatar className="h-10 w-10 mr-4">
-                    <img src={testimonial.avatarUrl} alt={testimonial.name} />
+                    <AvatarImage src={testimonial.avatarUrl} alt={testimonial.name} />
+                    <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{testimonial.name}</p>
