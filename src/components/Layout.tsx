@@ -4,6 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogOut, PieChart, PlusCircle, Wallet } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,8 +36,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <span>ExpenseWise</span>
           </Link>
           
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline text-sm text-muted-foreground">
+          {/* Desktop Navigation */}
+          <div className="hidden sm:flex items-center gap-4">
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link to="/" className={`${navigationMenuTriggerStyle()} ${
+                    location.pathname === "/" ? "bg-accent text-accent-foreground" : ""
+                  }`}>
+                    Dashboard
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/add" className={`${navigationMenuTriggerStyle()} ${
+                    location.pathname === "/add" ? "bg-accent text-accent-foreground" : ""
+                  }`}>
+                    Add Transaction
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/reports" className={`${navigationMenuTriggerStyle()} ${
+                    location.pathname === "/reports" ? "bg-accent text-accent-foreground" : ""
+                  }`}>
+                    Reports
+                  </Link>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+            <span className="text-sm text-muted-foreground">
               Welcome, {user?.name}
             </span>
             <Button variant="ghost" size="sm" onClick={logout}>
