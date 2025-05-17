@@ -27,7 +27,7 @@ import {
   Cell,
 } from "recharts";
 import { useExpenses, ExpenseCategory } from "@/contexts/ExpenseContext";
-import { format, subDays, startOfMonth, endOfMonth, isSameMonth } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 
 const COLORS = [
@@ -71,6 +71,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const Reports: React.FC = () => {
   const { expenses } = useExpenses();
   const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('month');
+  const [activeTab, setActiveTab] = useState<string>("category");
   
   // Filter expenses based on time filter
   const getFilteredExpenses = () => {
@@ -132,14 +133,47 @@ const Reports: React.FC = () => {
     
     return result;
   };
+
+  // Generate monthly data for bar chart
+  const getMonthlyData = () => {
+    const today = new Date();
+    const result = [];
+    
+    // Generate data for last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = subMonths(today, i);
+      const firstDay = startOfMonth(date);
+      const lastDay = endOfMonth(date);
+      
+      const monthExpenses = filteredExpenses.filter(e => {
+        const expenseDate = new Date(e.date);
+        return expenseDate >= firstDay && expenseDate <= lastDay;
+      });
+      
+      const totalAmount = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+      
+      result.push({
+        name: format(date, 'MMM'),
+        value: totalAmount,
+        date: format(date, 'MMM yyyy'),
+      });
+    }
+    
+    return result;
+  };
   
   const dailyData = getDailyData();
+  const monthlyData = getMonthlyData();
+
+  const handleTimeFilterChange = (value: 'week' | 'month' | 'all') => {
+    setTimeFilter(value);
+  };
   
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Expense Reports</h1>
       
-      <Tabs defaultValue="category" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="category">By Category</TabsTrigger>
           <TabsTrigger value="daily">Daily Spending</TabsTrigger>
@@ -147,13 +181,25 @@ const Reports: React.FC = () => {
         
         <div className="flex justify-end">
           <TabsList className="mb-4">
-            <TabsTrigger value="week" onClick={() => setTimeFilter('week')}>
+            <TabsTrigger 
+              value="week" 
+              onClick={() => handleTimeFilterChange('week')}
+              className={timeFilter === 'week' ? "bg-primary text-primary-foreground" : ""}
+            >
               Week
             </TabsTrigger>
-            <TabsTrigger value="month" onClick={() => setTimeFilter('month')}>
+            <TabsTrigger 
+              value="month" 
+              onClick={() => handleTimeFilterChange('month')}
+              className={timeFilter === 'month' ? "bg-primary text-primary-foreground" : ""}
+            >
               Month
             </TabsTrigger>
-            <TabsTrigger value="all" onClick={() => setTimeFilter('all')}>
+            <TabsTrigger 
+              value="all" 
+              onClick={() => handleTimeFilterChange('all')}
+              className={timeFilter === 'all' ? "bg-primary text-primary-foreground" : ""}
+            >
               All Time
             </TabsTrigger>
           </TabsList>
@@ -204,14 +250,22 @@ const Reports: React.FC = () => {
         <TabsContent value="daily" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Daily Spending</CardTitle>
-              <CardDescription>Last 7 days</CardDescription>
+              <CardTitle>
+                {timeFilter === 'week' ? 'Daily Spending' : 
+                 timeFilter === 'month' ? 'Monthly Spending' : 'All Time Spending'}
+              </CardTitle>
+              <CardDescription>
+                {timeFilter === 'week' ? 'Last 7 days' : 
+                 timeFilter === 'month' ? 'Last 6 months' : 'Complete history'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[350px]">
-                {dailyData.some(day => day.value > 0) ? (
+                {(timeFilter === 'week' && dailyData.some(day => day.value > 0)) || 
+                 (timeFilter === 'month' && monthlyData.some(month => month.value > 0)) || 
+                 (timeFilter === 'all' && [...dailyData, ...monthlyData].some(item => item.value > 0)) ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={dailyData}>
+                    <BarChart data={timeFilter === 'week' ? dailyData : monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
                       <XAxis dataKey="name" />
                       <YAxis />
@@ -221,7 +275,11 @@ const Reports: React.FC = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">No spending data available for the last 7 days</p>
+                    <p className="text-muted-foreground">
+                      {timeFilter === 'week' ? 'No spending data available for the last 7 days' : 
+                       timeFilter === 'month' ? 'No spending data available for the last 6 months' : 
+                       'No spending data available'}
+                    </p>
                   </div>
                 )}
               </div>
