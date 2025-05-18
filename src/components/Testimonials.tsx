@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Star } from "lucide-react";
+import { Star, Receipt, PiggyBank, Wallet } from "lucide-react";
 
 const testimonialsData = [
   {
@@ -11,7 +11,8 @@ const testimonialsData = [
     role: "Small Business Owner",
     content: "ExpenseWise has completely transformed how I manage my business finances. The clear reports and easy tracking have saved me hours of work each month.",
     rating: 5,
-    avatarUrl: "https://i.pravatar.cc/150?img=32",
+    avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=150&auto=format&fit=crop",
+    icon: <Receipt className="w-12 h-12 text-primary" />,
   },
   {
     id: 2,
@@ -19,7 +20,8 @@ const testimonialsData = [
     role: "Freelance Designer",
     content: "As a freelancer, keeping track of expenses was always a headache until I found ExpenseWise. Now I can easily categorize everything and see where my money is going.",
     rating: 5,
-    avatarUrl: "https://i.pravatar.cc/150?img=11",
+    avatarUrl: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=150&auto=format&fit=crop",
+    icon: <PiggyBank className="w-12 h-12 text-primary" />,
   },
   {
     id: 3,
@@ -27,7 +29,8 @@ const testimonialsData = [
     role: "Finance Student",
     content: "The visualization tools in ExpenseWise made it so much easier to understand my spending habits. I've already recommended it to all my classmates!",
     rating: 4,
-    avatarUrl: "https://i.pravatar.cc/150?img=25",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop",
+    icon: <Wallet className="w-12 h-12 text-primary" />,
   },
 ];
 
@@ -44,6 +47,9 @@ const Testimonials: React.FC = () => {
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
                     <Star key={i} className="w-5 h-5 fill-primary text-primary" />
                   ))}
+                </div>
+                <div className="flex justify-center my-6">
+                  {testimonial.icon}
                 </div>
                 <p className="mb-6 text-muted-foreground">{testimonial.content}</p>
                 <div className="flex items-center">
