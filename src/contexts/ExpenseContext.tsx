@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
@@ -38,7 +37,7 @@ interface ExpenseContextType {
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
-// Mock initial expenses
+// Mock initial expenses - only used for demo user
 const MOCK_EXPENSES: Expense[] = [
   {
     id: "1",
@@ -88,12 +87,14 @@ export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
           setExpenses(JSON.parse(savedExpenses));
         } catch (error) {
           console.error("Failed to parse saved expenses:", error);
-          setExpenses(MOCK_EXPENSES);
+          // Only use mock data for the demo user (id: "1")
+          setExpenses(user.id === "1" ? MOCK_EXPENSES : []);
         }
       } else {
-        // Use mock data for new users
-        setExpenses(MOCK_EXPENSES);
-        saveExpenses(MOCK_EXPENSES);
+        // Only use mock data for the demo user (id: "1"), empty array for new users
+        const initialExpenses = user.id === "1" ? MOCK_EXPENSES : [];
+        setExpenses(initialExpenses);
+        saveExpenses(initialExpenses);
       }
     } else {
       setExpenses([]);
