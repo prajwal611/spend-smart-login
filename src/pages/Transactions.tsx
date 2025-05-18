@@ -2,17 +2,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useExpenses } from "@/contexts/ExpenseContext";
+import { useAuth } from "@/contexts/AuthContext";
 import ExpenseCard from "@/components/ExpenseCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { ExpenseCategory } from "@/contexts/ExpenseContext";
 import { TransactionType, isValidTransactionType } from "@/lib/utils";
+import { exportTransactionsAsPDF } from "@/utils/exportUtils";
 
 const Transactions: React.FC = () => {
   const { expenses, deleteExpense } = useExpenses();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,11 +55,26 @@ const Transactions: React.FC = () => {
     setShowConfirmDialog(true);
   };
 
+  const handleExport = () => {
+    // Export the filtered transactions only
+    exportTransactionsAsPDF(sortedExpenses, user?.name || "User");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">All Transactions</h1>
-        <Button onClick={() => navigate("/add")}>Add New</Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={handleExport}
+            disabled={sortedExpenses.length === 0}
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Export
+          </Button>
+          <Button onClick={() => navigate("/add")}>Add New</Button>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-3">
