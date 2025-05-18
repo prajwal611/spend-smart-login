@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -34,9 +33,9 @@ const Index = () => {
             </div>
             <div className="flex-1">
               <img 
-                src="/placeholder.svg" 
-                alt="ExpenseWise Dashboard" 
-                className="w-full h-auto rounded-lg shadow-lg"
+                src="https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=600&auto=format&fit=crop" 
+                alt="Financial Management Dashboard" 
+                className="w-full h-auto rounded-lg shadow-xl border border-border/40"
               />
             </div>
           </div>
