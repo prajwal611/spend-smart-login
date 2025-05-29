@@ -13,6 +13,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-border py-4 px-6 sm:px-8">
+      <header className="bg-white dark:bg-gray-900 border-b border-border py-4 px-6 sm:px-8">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link to="/dashboard" className="flex items-center gap-2 text-primary font-semibold text-xl">
             <Wallet className="h-6 w-6" />
@@ -63,6 +64,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
+            <ThemeToggle />
             <span className="text-sm text-muted-foreground">
               Welcome, {user?.name}
             </span>
@@ -70,6 +72,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <LogOut className="h-4 w-4 mr-1" />
               <span>Logout</span>
             </Button>
+          </div>
+
+          {/* Mobile Theme Toggle */}
+          <div className="sm:hidden">
+            <ThemeToggle />
           </div>
         </div>
       </header>
