@@ -32,7 +32,7 @@ const AddGoal: React.FC = () => {
     resolver: zodResolver(goalSchema),
     defaultValues: {
       name: "",
-      targetAmount: 0,
+      targetAmount: undefined,
       currentAmount: 0,
       category: "",
       targetDate: "",
@@ -42,8 +42,12 @@ const AddGoal: React.FC = () => {
 
   const onSubmit = (data: GoalFormData) => {
     addGoal({
-      ...data,
+      name: data.name,
+      targetAmount: data.targetAmount,
+      currentAmount: data.currentAmount,
       category: data.category as GoalCategory,
+      targetDate: data.targetDate,
+      description: data.description,
     });
     navigate("/goals");
   };
@@ -113,7 +117,8 @@ const AddGoal: React.FC = () => {
                           type="number"
                           placeholder="10000"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -132,7 +137,8 @@ const AddGoal: React.FC = () => {
                           type="number"
                           placeholder="0"
                           {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          value={field.value || ""}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
                         />
                       </FormControl>
                       <FormMessage />
