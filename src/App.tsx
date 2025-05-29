@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ExpenseProvider } from "./contexts/ExpenseContext";
+import { GoalProvider } from "./contexts/GoalContext";
+import Goals from "./pages/Goals";
+import AddGoal from "./pages/AddGoal";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -46,79 +48,101 @@ const AppWithProviders = () => (
     <TooltipProvider>
       <AuthProvider>
         <ExpenseProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route 
-                path="/" 
-                element={
-                  <PublicRoute>
-                    <Index />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/login" 
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/add" 
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <AddExpense />
-                    </Layout>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/edit/:id" 
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <EditExpense />
-                    </Layout>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/transactions" 
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Transactions />
-                    </Layout>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/reports" 
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Reports />
-                    </Layout>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <GoalProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route 
+                  path="/" 
+                  element={
+                    <PublicRoute>
+                      <Index />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/login" 
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  } 
+                />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Dashboard />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/add" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <AddExpense />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/edit/:id" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <EditExpense />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/transactions" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Transactions />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/reports" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Reports />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/goals" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Goals />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/goals/add" 
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <AddGoal />
+                      </Layout>
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </GoalProvider>
         </ExpenseProvider>
       </AuthProvider>
     </TooltipProvider>
