@@ -39,12 +39,9 @@ const getMockUsers = () => {
   ];
 };
 
-// Initialize with stored users or default
-const MOCK_USERS = getMockUsers();
-
 // Save users to localStorage
-const saveMockUsers = () => {
-  localStorage.setItem("expenseTrackerMockUsers", JSON.stringify(MOCK_USERS));
+const saveMockUsers = (users: any[]) => {
+  localStorage.setItem("expenseTrackerMockUsers", JSON.stringify(users));
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -71,16 +68,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const foundUser = MOCK_USERS.find(
+    // Get current users from localStorage
+    const currentUsers = getMockUsers();
+    console.log("Current users:", currentUsers);
+    console.log("Attempting login with:", { email, password });
+    
+    const foundUser = currentUsers.find(
       (u) => u.email === email && u.password === password
     );
     
     if (foundUser) {
-      const { password, ...userWithoutPassword } = foundUser;
+      const { password: _, ...userWithoutPassword } = foundUser;
       setUser(userWithoutPassword);
       localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
       toast.success("Logged in successfully");
     } else {
+      console.log("User not found or wrong credentials");
       toast.error("Invalid email or password");
       throw new Error("Invalid email or password");
     }
@@ -92,8 +95,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Get current users from localStorage
+    const currentUsers = getMockUsers();
+    
     // Check if user already exists
-    if (MOCK_USERS.some(u => u.email === email)) {
+    if (currentUsers.some(u => u.email === email)) {
       toast.error("User already exists");
       setIsLoading(false);
       throw new Error("User already exists");
@@ -101,15 +107,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // Create a new user
     const newUser = {
-      id: (MOCK_USERS.length + 1).toString(),
+      id: (currentUsers.length + 1).toString(),
       email,
       name,
       password, // Include password for mock data
     };
     
-    // Add to mock users array
-    MOCK_USERS.push(newUser);
-    saveMockUsers(); // Save updated users list
+    // Add to users array and save
+    const updatedUsers = [...currentUsers, newUser];
+    saveMockUsers(updatedUsers);
     
     // Return without password for user state
     const { password: _, ...userWithoutPassword } = newUser;
