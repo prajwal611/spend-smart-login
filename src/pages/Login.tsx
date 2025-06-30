@@ -12,8 +12,19 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,6 +32,8 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
@@ -40,6 +53,28 @@ const Login: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    if (!resetEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    // Get current users from localStorage
+    const storedUsers = localStorage.getItem("expenseTrackerMockUsers");
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+    
+    const user = users.find((u: any) => u.email === resetEmail);
+    
+    if (user) {
+      toast.success(`Password reset link sent to ${resetEmail} (Demo: Your password is "${user.password}")`);
+    } else {
+      toast.error("No account found with this email address");
+    }
+    
+    setShowForgotPassword(false);
+    setResetEmail("");
   };
 
   return (
@@ -103,6 +138,20 @@ const Login: React.FC = () => {
                   disabled={isSubmitting}
                 />
               </div>
+
+              {isLogin && (
+                <div className="text-right">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-sm p-0 h-auto"
+                    onClick={() => setShowForgotPassword(true)}
+                    disabled={isSubmitting}
+                  >
+                    Forgot password?
+                  </Button>
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex-col space-y-4">
               <Button 
@@ -131,6 +180,34 @@ const Login: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <AlertDialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter your email address and we'll send you a password reset link.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="reset-email">Email</Label>
+            <Input
+              id="reset-email"
+              type="email"
+              placeholder="your@email.com"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleForgotPassword}>
+              Send Reset Link
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

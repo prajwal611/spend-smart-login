@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -64,65 +63,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call delay
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Get current users from localStorage
-    const currentUsers = getMockUsers();
-    console.log("Current users:", currentUsers);
-    console.log("Attempting login with:", { email, password });
-    
-    const foundUser = currentUsers.find(
-      (u) => u.email === email && u.password === password
-    );
-    
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
-      toast.success("Logged in successfully");
-    } else {
-      console.log("User not found or wrong credentials");
-      toast.error("Invalid email or password");
-      throw new Error("Invalid email or password");
+    try {
+      // Simulate API call delay
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Get current users from localStorage
+      const currentUsers = getMockUsers();
+      console.log("Current users:", currentUsers);
+      console.log("Attempting login with:", { email, password });
+      
+      const foundUser = currentUsers.find(
+        (u) => u.email === email && u.password === password
+      );
+      
+      if (foundUser) {
+        const { password: _, ...userWithoutPassword } = foundUser;
+        setUser(userWithoutPassword);
+        localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
+        toast.success("Logged in successfully");
+      } else {
+        console.log("User not found or wrong credentials");
+        toast.error("Invalid email or password");
+        throw new Error("Invalid email or password");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const register = async (name: string, email: string, password: string) => {
-    // Simulate API call delay
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Get current users from localStorage
-    const currentUsers = getMockUsers();
-    
-    // Check if user already exists
-    if (currentUsers.some(u => u.email === email)) {
-      toast.error("User already exists");
+    try {
+      // Simulate API call delay
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Get current users from localStorage
+      const currentUsers = getMockUsers();
+      
+      // Check if user already exists
+      if (currentUsers.some(u => u.email === email)) {
+        toast.error("User already exists");
+        throw new Error("User already exists");
+      }
+      
+      // Create a new user
+      const newUser = {
+        id: (currentUsers.length + 1).toString(),
+        email,
+        name,
+        password, // Include password for mock data
+      };
+      
+      // Add to users array and save
+      const updatedUsers = [...currentUsers, newUser];
+      saveMockUsers(updatedUsers);
+      
+      // Return without password for user state
+      const { password: _, ...userWithoutPassword } = newUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
+      toast.success("Registration successful");
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw error;
+    } finally {
       setIsLoading(false);
-      throw new Error("User already exists");
     }
-    
-    // Create a new user
-    const newUser = {
-      id: (currentUsers.length + 1).toString(),
-      email,
-      name,
-      password, // Include password for mock data
-    };
-    
-    // Add to users array and save
-    const updatedUsers = [...currentUsers, newUser];
-    saveMockUsers(updatedUsers);
-    
-    // Return without password for user state
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
-    toast.success("Registration successful");
-    setIsLoading(false);
   };
 
   const logout = () => {
