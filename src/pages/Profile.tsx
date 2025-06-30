@@ -1,6 +1,6 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useExpenses } from "@/contexts/ExpenseContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,15 +11,28 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Calendar, Edit2, Save, X } from "lucide-react";
+import { User, Mail, Calendar, Edit2, Save, X, Download, Key } from "lucide-react";
 import { toast } from "sonner";
+import { exportTransactionsAsPDF } from "@/utils/exportUtils";
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth();
+  const { expenses } = useExpenses();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || "");
   const [editedEmail, setEditedEmail] = useState(user?.email || "");
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSave = () => {
     // In a real app, this would update the user profile via API
@@ -32,6 +45,34 @@ const Profile: React.FC = () => {
     setEditedName(user?.name || "");
     setEditedEmail(user?.email || "");
     setIsEditing(false);
+  };
+
+  const handleChangePassword = () => {
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+    // In a real app, this would verify current password and update via API
+    toast.success("Password changed successfully");
+    setIsPasswordDialogOpen(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleExportData = () => {
+    if (!user) return;
+    try {
+      exportTransactionsAsPDF(expenses, user.name);
+      toast.success("Data exported successfully");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export data");
+    }
   };
 
   const getInitials = (name: string) => {
@@ -145,12 +186,66 @@ const Profile: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full justify-start">
-              Change Password
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <Key className="mr-2 h-4 w-4" />
+                  Change Password
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Change Password</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="current-password">Current Password</Label>
+                    <Input
+                      id="current-password"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleChangePassword}>
+                      Change Password
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={handleExportData}
+            >
+              <Download className="mr-2 h-4 w-4" />
               Export Data
             </Button>
+            
             <Button 
               variant="destructive" 
               className="w-full justify-start"

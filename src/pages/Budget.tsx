@@ -19,18 +19,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Progress } from "@/components/ui/progress";
-import { Plus, TrendingUp, AlertTriangle, Target } from "lucide-react";
+import { Plus, TrendingUp, AlertTriangle, Target, Edit2, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 const Budget: React.FC = () => {
-  const { budgets, setBudgetLimit, getCurrentMonthBudget } = useBudget();
+  const { budgets, setBudgetLimit, getCurrentMonthBudget, deleteBudget } = useBudget();
   const { expenses } = useExpenses();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(
     new Date().toISOString().slice(0, 7)
   );
   const [budgetAmount, setBudgetAmount] = useState("");
+  const [editingBudget, setEditingBudget] = useState<string | null>(null);
 
   const currentMonthBudget = getCurrentMonthBudget();
   
@@ -46,7 +58,19 @@ const Budget: React.FC = () => {
       setBudgetLimit(selectedMonth, amount);
       setBudgetAmount("");
       setIsDialogOpen(false);
+      setEditingBudget(null);
     }
+  };
+
+  const handleEditBudget = (budgetId: string, currentLimit: number, month: string) => {
+    setEditingBudget(budgetId);
+    setSelectedMonth(month);
+    setBudgetAmount(currentLimit.toString());
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteBudget = (budgetId: string) => {
+    deleteBudget(budgetId);
   };
 
   const getMonthName = (monthString: string) => {
@@ -76,7 +100,14 @@ const Budget: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Budget Management</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setEditingBudget(null);
+            setBudgetAmount("");
+            setSelectedMonth(new Date().toISOString().slice(0, 7));
+          }
+        }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -85,7 +116,9 @@ const Budget: React.FC = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Set Monthly Budget</DialogTitle>
+              <DialogTitle>
+                {editingBudget ? "Edit Monthly Budget" : "Set Monthly Budget"}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -95,6 +128,7 @@ const Budget: React.FC = () => {
                   type="month"
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
+                  disabled={!!editingBudget}
                 />
               </div>
               <div className="space-y-2">
@@ -112,7 +146,7 @@ const Budget: React.FC = () => {
                   Cancel
                 </Button>
                 <Button onClick={handleSetBudget}>
-                  Set Budget
+                  {editingBudget ? "Update Budget" : "Set Budget"}
                 </Button>
               </div>
             </div>
@@ -186,10 +220,44 @@ const Budget: React.FC = () => {
                 return (
                   <Card key={budget.id}>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">{getMonthName(budget.month)}</CardTitle>
-                      <CardDescription className={getBudgetColor(budget, monthExpenses)}>
-                        {getBudgetStatus(budget, monthExpenses)}
-                      </CardDescription>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{getMonthName(budget.month)}</CardTitle>
+                          <CardDescription className={getBudgetColor(budget, monthExpenses)}>
+                            {getBudgetStatus(budget, monthExpenses)}
+                          </CardDescription>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditBudget(budget.id, budget.limit, budget.month)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Budget</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete the budget for {getMonthName(budget.month)}? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteBudget(budget.id)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       {budget.limit > 0 ? (

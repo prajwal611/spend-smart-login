@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
@@ -17,6 +16,7 @@ interface BudgetContextType {
   updateSpent: (month: string, amount: number) => void;
   getCurrentMonthBudget: () => MonthlyBudget | null;
   getBudgetForMonth: (month: string) => MonthlyBudget | null;
+  deleteBudget: (budgetId: string) => void;
 }
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
@@ -107,6 +107,13 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return budgets.find(b => b.month === month) || null;
   };
 
+  const deleteBudget = (budgetId: string) => {
+    const updatedBudgets = budgets.filter(budget => budget.id !== budgetId);
+    setBudgets(updatedBudgets);
+    saveBudgets(updatedBudgets);
+    toast.success("Budget deleted successfully");
+  };
+
   return (
     <BudgetContext.Provider
       value={{
@@ -116,6 +123,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateSpent,
         getCurrentMonthBudget,
         getBudgetForMonth,
+        deleteBudget,
       }}
     >
       {children}
