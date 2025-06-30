@@ -2,7 +2,7 @@
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, PieChart, PlusCircle, Wallet } from "lucide-react";
+import { LogOut, PieChart, PlusCircle, Wallet, StickyNote, Target, DollarSign, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   NavigationMenu,
@@ -13,6 +13,14 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface LayoutProps {
@@ -27,6 +35,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return <>{children}</>;
   }
 
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
@@ -38,7 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden sm:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
@@ -56,6 +73,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
+                  <Link to="/budget" className={`${navigationMenuTriggerStyle()} ${
+                    location.pathname === "/budget" ? "bg-accent text-accent-foreground" : ""
+                  }`}>
+                    Budget
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/notes" className={`${navigationMenuTriggerStyle()} ${
+                    location.pathname === "/notes" ? "bg-accent text-accent-foreground" : ""
+                  }`}>
+                    Notes
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
                   <Link to="/reports" className={`${navigationMenuTriggerStyle()} ${
                     location.pathname === "/reports" ? "bg-accent text-accent-foreground" : ""
                   }`}>
@@ -64,34 +95,69 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
+            
             <ThemeToggle />
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user?.name}
-            </span>
-            <Button variant="ghost" size="sm" onClick={logout}>
-              <LogOut className="h-4 w-4 mr-1" />
-              <span>Logout</span>
-            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="" alt={user?.name} />
+                    <AvatarFallback>
+                      {user?.name ? getInitials(user.name) : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium">{user?.name}</p>
+                    <p className="w-[200px] truncate text-sm text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/goals">
+                    <Target className="mr-2 h-4 w-4" />
+                    Goals
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile Theme Toggle */}
-          <div className="sm:hidden">
+          <div className="md:hidden">
             <ThemeToggle />
           </div>
         </div>
       </header>
       
       {/* Main content */}
-      <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto pb-20 sm:pb-8">
+      <main className="flex-grow p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto pb-20 md:pb-8">
         {children}
       </main>
       
       {/* Mobile navigation */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-10">
-        <div className="grid grid-cols-4">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-10">
+        <div className="grid grid-cols-5">
           <Link 
             to="/dashboard" 
-            className={`flex flex-col items-center py-2 px-4 ${
+            className={`flex flex-col items-center py-2 px-2 ${
               location.pathname === "/dashboard" ? "text-primary" : "text-muted-foreground"
             }`}
           >
@@ -100,7 +166,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Link>
           <Link 
             to="/add" 
-            className={`flex flex-col items-center py-2 px-4 ${
+            className={`flex flex-col items-center py-2 px-2 ${
               location.pathname === "/add" ? "text-primary" : "text-muted-foreground"
             }`}
           >
@@ -108,21 +174,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <span className="text-xs mt-1">Add</span>
           </Link>
           <Link 
-            to="/reports" 
-            className={`flex flex-col items-center py-2 px-4 ${
-              location.pathname === "/reports" ? "text-primary" : "text-muted-foreground"
+            to="/budget" 
+            className={`flex flex-col items-center py-2 px-2 ${
+              location.pathname === "/budget" ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            <PieChart className="h-5 w-5" />
-            <span className="text-xs mt-1">Reports</span>
+            <DollarSign className="h-5 w-5" />
+            <span className="text-xs mt-1">Budget</span>
           </Link>
-          <button 
-            onClick={logout}
-            className="flex flex-col items-center py-2 px-4 text-muted-foreground"
+          <Link 
+            to="/notes" 
+            className={`flex flex-col items-center py-2 px-2 ${
+              location.pathname === "/notes" ? "text-primary" : "text-muted-foreground"
+            }`}
           >
-            <LogOut className="h-5 w-5" />
-            <span className="text-xs mt-1">Logout</span>
-          </button>
+            <StickyNote className="h-5 w-5" />
+            <span className="text-xs mt-1">Notes</span>
+          </Link>
+          <Link 
+            to="/profile" 
+            className={`flex flex-col items-center py-2 px-2 ${
+              location.pathname === "/profile" ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <User className="h-5 w-5" />
+            <span className="text-xs mt-1">Profile</span>
+          </Link>
         </div>
       </nav>
     </div>
