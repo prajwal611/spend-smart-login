@@ -1,4 +1,5 @@
 
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -22,27 +23,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Mock users for demo - make this persistent in localStorage so users persist across refreshes
 const getMockUsers = () => {
-  const storedUsers = localStorage.getItem("expenseTrackerMockUsers");
-  if (storedUsers) {
-    try {
-      return JSON.parse(storedUsers);
-    } catch (error) {
-      console.error("Failed to parse stored mock users:", error);
+  try {
+    const storedUsers = localStorage.getItem("expenseTrackerMockUsers");
+    if (storedUsers) {
+      const parsed = JSON.parse(storedUsers);
+      return Array.isArray(parsed) ? parsed : getDefaultUsers();
     }
+  } catch (error) {
+    console.error("Failed to parse stored mock users:", error);
   }
-  return [
-    {
-      id: "1",
-      email: "user@example.com",
-      password: "password123",
-      name: "Demo User",
-    },
-  ];
+  return getDefaultUsers();
 };
+
+const getDefaultUsers = () => [
+  {
+    id: "1",
+    email: "user@example.com",
+    password: "password123",
+    name: "Demo User",
+  },
+];
 
 // Save users to localStorage
 const saveMockUsers = (users: any[]) => {
-  localStorage.setItem("expenseTrackerMockUsers", JSON.stringify(users));
+  try {
+    localStorage.setItem("expenseTrackerMockUsers", JSON.stringify(users));
+  } catch (error) {
+    console.error("Failed to save mock users:", error);
+  }
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,20 +59,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Check for saved user in localStorage
-    const savedUser = localStorage.getItem("expenseTrackerUser");
-    if (savedUser) {
-      try {
+    try {
+      const savedUser = localStorage.getItem("expenseTrackerUser");
+      if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Failed to parse saved user:", error);
-        localStorage.removeItem("expenseTrackerUser");
+        // Validate the parsed user has required fields
+        if (parsedUser && parsedUser.id && parsedUser.email && parsedUser.name) {
+          setUser(parsedUser);
+        } else {
+          localStorage.removeItem("expenseTrackerUser");
+        }
       }
+    } catch (error) {
+      console.error("Failed to parse saved user:", error);
+      localStorage.removeItem("expenseTrackerUser");
     }
     setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      throw new Error("Email and password are required");
+    }
+
     try {
       // Simulate API call delay
       setIsLoading(true);
@@ -72,27 +90,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Get current users from localStorage
       const currentUsers = getMockUsers();
-      console.log("Current users:", currentUsers);
-      console.log("Attempting login with:", { email, password });
+      console.log("Available users for login:", currentUsers.map(u => ({ email: u.email, id: u.id })));
       
-      // Trim whitespace and ensure exact match
-      const trimmedEmail = email.trim().toLowerCase();
-      const trimmedPassword = password.trim();
+      // Normalize inputs
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedPassword = password.trim();
       
-      const foundUser = currentUsers.find(
-        (u) => u.email.toLowerCase() === trimmedEmail && u.password === trimmedPassword
-      );
+      console.log("Login attempt:", { email: normalizedEmail, hasPassword: !!normalizedPassword });
       
-      console.log("Found user:", foundUser);
+      // Find user with exact match
+      const foundUser = currentUsers.find(user => {
+        const userEmail = user.email.toLowerCase();
+        return userEmail === normalizedEmail && user.password === normalizedPassword;
+      });
       
       if (foundUser) {
         const { password: _, ...userWithoutPassword } = foundUser;
         setUser(userWithoutPassword);
         localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
         toast.success("Logged in successfully");
-        console.log("Login successful for user:", userWithoutPassword);
+        console.log("Login successful for:", userWithoutPassword.email);
       } else {
-        console.log("Login failed - credentials don't match any user");
+        console.log("Login failed - no matching user found");
         toast.error("Invalid email or password");
         throw new Error("Invalid email or password");
       }
@@ -105,6 +124,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, password: string) => {
+    if (!name || !email || !password) {
+      toast.error("Please fill in all fields");
+      throw new Error("All fields are required");
+    }
+
     try {
       // Simulate API call delay
       setIsLoading(true);
@@ -114,14 +138,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const currentUsers = getMockUsers();
       
       // Check if user already exists (case insensitive)
-      if (currentUsers.some(u => u.email.toLowerCase() === email.toLowerCase().trim())) {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (currentUsers.some(u => u.email.toLowerCase() === normalizedEmail)) {
         toast.error("User already exists");
         throw new Error("User already exists");
       }
       
       // Create a new user
       const newUser = {
-        id: (currentUsers.length + 1).toString(),
+        id: Date.now().toString(), // Use timestamp for unique ID
         email: email.trim(),
         name: name.trim(),
         password: password.trim(),
@@ -149,6 +174,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error("No user logged in");
     }
 
+    if (!currentPassword || !newPassword) {
+      toast.error("Please enter both current and new password");
+      throw new Error("Both passwords are required");
+    }
+
     try {
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -160,13 +190,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error("User not found");
       }
       
-      if (currentUsers[userIndex].password !== currentPassword) {
+      if (currentUsers[userIndex].password !== currentPassword.trim()) {
         toast.error("Current password is incorrect");
         throw new Error("Current password is incorrect");
       }
       
       // Update password
-      currentUsers[userIndex].password = newPassword;
+      currentUsers[userIndex].password = newPassword.trim();
       saveMockUsers(currentUsers);
       
       toast.success("Password changed successfully");
@@ -208,3 +238,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
