@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -14,6 +15,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,17 +75,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log("Current users:", currentUsers);
       console.log("Attempting login with:", { email, password });
       
+      // Trim whitespace and ensure exact match
+      const trimmedEmail = email.trim().toLowerCase();
+      const trimmedPassword = password.trim();
+      
       const foundUser = currentUsers.find(
-        (u) => u.email === email && u.password === password
+        (u) => u.email.toLowerCase() === trimmedEmail && u.password === trimmedPassword
       );
+      
+      console.log("Found user:", foundUser);
       
       if (foundUser) {
         const { password: _, ...userWithoutPassword } = foundUser;
         setUser(userWithoutPassword);
         localStorage.setItem("expenseTrackerUser", JSON.stringify(userWithoutPassword));
         toast.success("Logged in successfully");
+        console.log("Login successful for user:", userWithoutPassword);
       } else {
-        console.log("User not found or wrong credentials");
+        console.log("Login failed - credentials don't match any user");
         toast.error("Invalid email or password");
         throw new Error("Invalid email or password");
       }
@@ -104,8 +113,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Get current users from localStorage
       const currentUsers = getMockUsers();
       
-      // Check if user already exists
-      if (currentUsers.some(u => u.email === email)) {
+      // Check if user already exists (case insensitive)
+      if (currentUsers.some(u => u.email.toLowerCase() === email.toLowerCase().trim())) {
         toast.error("User already exists");
         throw new Error("User already exists");
       }
@@ -113,9 +122,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Create a new user
       const newUser = {
         id: (currentUsers.length + 1).toString(),
-        email,
-        name,
-        password, // Include password for mock data
+        email: email.trim(),
+        name: name.trim(),
+        password: password.trim(),
       };
       
       // Add to users array and save
@@ -129,6 +138,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success("Registration successful");
     } catch (error) {
       console.error("Registration error:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!user) {
+      throw new Error("No user logged in");
+    }
+
+    try {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const currentUsers = getMockUsers();
+      const userIndex = currentUsers.findIndex(u => u.id === user.id);
+      
+      if (userIndex === -1) {
+        throw new Error("User not found");
+      }
+      
+      if (currentUsers[userIndex].password !== currentPassword) {
+        toast.error("Current password is incorrect");
+        throw new Error("Current password is incorrect");
+      }
+      
+      // Update password
+      currentUsers[userIndex].password = newPassword;
+      saveMockUsers(currentUsers);
+      
+      toast.success("Password changed successfully");
+    } catch (error) {
+      console.error("Change password error:", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -150,6 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
+        changePassword,
       }}
     >
       {children}
